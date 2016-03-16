@@ -31,7 +31,7 @@
 					<br />
 					<h3>Add Anagrams</h3>
 					<input type="text" name="anagram" /> <input type="submit" />
-				</form><br /><br />
+				</form><br /><br/>
 			</div>
 			<br/><br/><br/>
 			<div class="boxed2" align="center" action="/">
@@ -39,11 +39,10 @@
 					<br />
 					<h3>Search Anagrams</h3>
 					<input type="text" name="anagram_seach" /> 
-					<input type="submit" /><br/><br/>
-					<textarea name="results" rows="5" cols="40"></textarea>
+					<input type="submit" name="Search" value="Search" /><br/><br/>
+					<textarea readonly name="results" rows="5" cols="40">${result}</textarea>
 				</form><br />
 			</div>
-
 		</c:when>
 
 		<c:otherwise>
