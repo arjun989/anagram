@@ -1,12 +1,17 @@
 package com.arjun.arangram;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Arrays;
 
+import javax.jdo.PersistenceManager;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
 
 import com.google.api.server.spi.auth.common.User;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 
@@ -36,6 +41,51 @@ public class RootServlet extends HttpServlet {
 	}
 
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		PrintWriter out = resp.getWriter();
+		// get access to the user service to get our user
+		UserService us = UserServiceFactory.getUserService();
+		com.google.appengine.api.users.User u = us.getCurrentUser();
+		// getting submitted word
+		String inp = req.getParameter("anagram");
+		// validation
+		if (!inp.matches("[a-zA-Z]+")) {
+			displayAlert("Invalid Input !", out);
+		}
 
+		inp = inp.toLowerCase();
+		char[] c = inp.toCharArray();
+		Arrays.sort(c);
+		// Lexically sorted anagram key
+		String KEY = new String(c);
+
+		PersistenceManager pm = null;
+		Anagram ang;
+		Key user_key = KeyFactory.createKey("Anagram", KEY);
+
+		try {
+			// Check if the KEY exists...
+			pm = PMF.get().getPersistenceManager();
+			ang = pm.getObjectById(Anagram.class, user_key);
+			ang.addAnagram(inp);
+			pm.makePersistent(ang);
+		} catch (Exception e) {
+			// This category anagram doesnt exist yet, so add it...
+			ang = new Anagram();
+			ang.setLexicalKey(user_key);
+			ang.addAnagram(inp);
+			pm.makePersistent(ang);
+		} finally {
+			pm.close();
+			displayAlert("Anagram Added !", out);
+		}
+		// resp.sendRedirect("/");
 	}
+
+	private void displayAlert(String msg, PrintWriter out) {
+		out.println("<script type=\"text/javascript\">");
+		out.println("alert('" + msg + "');");
+		out.println("location='/';");
+		out.println("</script>");
+	}
+
 }
